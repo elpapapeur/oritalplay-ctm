@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OritalPlay — Contre la Montre FH6</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d0f; color: #fff; font-family: system-ui, sans-serif; min-height: 100vh; }
+
+  .banner {
+    background: #111115;
+    border-bottom: 4px solid #E8C040;
+    padding: 40px 24px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: #E8C040;
+  }
+  .banner-tag {
+    display: inline-block;
+    background: rgba(232,192,64,0.12);
+    border: 1px solid rgba(232,192,64,0.35);
+    color: #E8C040;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    padding: 5px 14px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  .banner h1 { font-size: 48px; font-weight: 800; line-height: 1.05; margin-bottom: 6px; }
+  .banner h1 span { color: #E8C040; }
+  .banner-sub { font-size: 12px; letter-spacing: 3px; color: #666; margin-bottom: 28px; }
+  .banner-pills { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 24px; }
+  .pill {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 6px 14px;
+    color: #ccc; font-size: 13px;
+  }
+  .pill svg { width: 15px; height: 15px; stroke: #E8C040; fill: none; stroke-width: 2; }
+  .notice {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: rgba(232,192,64,0.07);
+    border: 1px solid rgba(232,192,64,0.2);
+    border-radius: 8px; padding: 12px 16px;
+    color: #c8a830; font-size: 13px; line-height: 1.5;
+    max-width: 600px; margin: 0 auto;
+    text-align: left;
+  }
+
+  .container { max-width: 680px; margin: 0 auto; padding: 32px 16px 48px; }
+
+  .form-card {
+    background: #17171c;
+    border: 1px solid #2a2a32;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 28px;
+  }
+  .form-card-title {
+    font-size: 14px; font-weight: 600; color: #E8C040;
+    letter-spacing: 1px; margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2a2a32;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .form-row { margin-bottom: 16px; }
+  .form-row label { display: block; font-size: 12px; font-weight: 500; color: #888; margin-bottom: 6px; letter-spacing: 0.5px; }
+  .form-row input, .form-row textarea {
+    width: 100%; background: #0d0d0f;
+    border: 1px solid #2a2a32; border-radius: 8px;
+    padding: 10px 14px; color: #fff; font-size: 14px;
+    font-family: inherit; outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-row input:focus, .form-row textarea:focus { border-color: #E8C040; }
+  .form-row textarea { resize: vertical; min-height: 75px; }
+  .form-hint { font-size: 11px; color: #555; margin-top: 4px; }
+  .color-row { display: flex; gap: 8px; align-items: center; }
+  .color-row input[type="color"] {
+    width: 42px; height: 42px; border-radius: 8px;
+    border: 1px solid #2a2a32; padding: 3px;
+    background: #0d0d0f; cursor: pointer; flex-shrink: 0;
+  }
+  .color-row input[type="text"] { flex: 1; }
+  .btn-submit {
+    width: 100%; padding: 14px;
+    background: #E8C040; color: #0d0d0f;
+    border: none; border-radius: 10px;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.5px;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn-submit:hover { opacity: 0.88; }
+  .btn-submit:active { transform: scale(0.98); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .toast {
+    background: #0f2e0f; border: 1px solid #1e5e1e;
+    color: #6fcf6f; border-radius: 8px;
+    padding: 11px 14px; font-size: 13px;
+    display: none; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .toast.show { display: flex; }
+  .toast-err { background: #2e0f0f; border-color: #5e1e1e; color: #cf6f6f; }
+
+  .section-heading {
+    font-size: 12px; font-weight: 600; color: #555;
+    letter-spacing: 2px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .count-badge {
+    background: #1a1a22; border-radius: 20px;
+    padding: 2px 10px; font-size: 11px; color: #666;
+  }
+
+  .inscrit-card {
+    background: #17171c; border: 1px solid #2a2a32;
+    border-radius: 12px; padding: 16px;
+    margin-bottom: 10px;
+  }
+  .inscrit-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .ecurie-dot {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #fff;
+    flex-shrink: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .inscrit-name { font-size: 14px; font-weight: 600; color: #fff; }
+  .inscrit-ecurie { font-size: 12px; color: #888; }
+  .inscrit-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; }
+  .meta-item { background: #111115; border-radius: 6px; padding: 8px 10px; }
+  .meta-item .lbl { color: #555; margin-bottom: 2px; font-size: 11px; }
+  .meta-item .val { color: #ccc; font-weight: 500; word-break: break-word; }
+  .meta-full { grid-column: 1 / -1; }
+
+  .empty-state { text-align: center; padding: 40px 16px; color: #555; font-size: 13px; }
+
+  .loading { text-align: center; padding: 20px; color: #666; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <div class="banner-tag">ORITALPLAY — FORZA HORIZON 6</div>
+  <h1>Contre<br><span>la Montre</span></h1>
+  <div class="banner-sub">NOUVEAU MODE COMPÉTITIF</div>
+  <div class="banner-pills">
+    <div class="pill">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Meilleur chrono
+    </div>
+    <div class="pill">
+      <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      Livrée exclusive
+    </div>
+    <div class="pill">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Réglage perso
+    </div>
+    <div class="pill">
+      <svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+      Écurie officielle
+    </div>
+  </div>
+  <div class="notice">
+    ⚠️ Chaque pilote doit participer avec sa <strong>propre livrée in-game</strong> et son <strong>réglage exclusif</strong>. Pas de copie — l'originalité fait partie du règlement.
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="form-card">
+    <div class="form-card-title">✦ INSCRIPTION PILOTE</div>
+
+    <div id="toast" class="toast"></div>
+
+    <div class="form-row">
+      <label>PSEUDO IN-GAME</label>
+      <input type="text" id="pseudo" placeholder="Ton pseudo Forza exact...">
+    </div>
+    <div class="form-row">
+      <label>NOM DE L'ÉCURIE</label>
+      <input type="text" id="ecurie" placeholder="ex. Écurie du Tonnerre, RedLine Racing...">
+    </div>
+    <div class="form-row">
+      <label>COULEUR PRINCIPALE DE LA LIVRÉE</label>
+      <div class="color-row">
+        <input type="color" id="livree-color" value="#E8C040">
+        <input type="text" id="livree-color-text" placeholder="#E8C040">
+      </div>
+      <div class="form-hint">Couleur dominante de ta peinture in-game</div>
+    </div>
+    <div class="form-row">
+      <label>DESCRIPTION DE LA LIVRÉE</label>
+      <textarea id="livree-desc" placeholder="Décris ta livrée : couleurs, motifs, inspirations..."></textarea>
+    </div>
+    <div class="form-row">
+      <label>VOITURE CHOISIE</label>
+      <input type="text" id="voiture" placeholder="ex. Ferrari 488 GT3, Lamborghini Huracán...">
+    </div>
+    <div class="form-row">
+      <label>RÉSUMÉ DU RÉGLAGE</label>
+      <textarea id="reglage" placeholder="Approche générale : suspension, aero, transmission, pneus..."></textarea>
+      <div class="form-hint">Pas besoin de partager les valeurs exactes — l'approche suffit</div>
+    </div>
+
+    <button class="btn-submit" id="btn-submit" onclick="inscrire()">Valider mon inscription</button>
+  </div>
+
+  <div class="section-heading">
+    PILOTES INSCRITS <span class="count-badge" id="count">...</span>
+  </div>
+  <div id="liste"><div class="loading">Chargement...</div></div>
+
+</div>
+
+<script>
+  // ⚠️ REMPLACE CETTE URL PAR TON URL APPS SCRIPT
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxaw0wYsjOHMEydmRKgXR_YQfaKwivdRhcdb1ZrWz_XhHq0o_KDMZv1bPNBE24EPCOx/exec';
+
+  function showToast(msg, isErr) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isErr ? ' toast-err' : '');
+    setTimeout(() => { t.className = 'toast'; }, 4000);
+  }
+
+  function colorToInitials(name) {
+    return name.trim().split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase() || '?';
+  }
+
+  function renderListe(inscrits) {
+    const liste = document.getElementById('liste');
+    document.getElementById('count').textContent = inscrits.length;
+    if (!inscrits.length) {
+      liste.innerHTML = '<div class="empty-state">Aucun pilote inscrit pour l\'instant.<br>Sois le premier sur la grille !</div>';
+      return;
+    }
+    liste.innerHTML = inscrits.map(p => `
+      <div class="inscrit-card">
+        <div class="inscrit-header">
+          <div class="ecurie-dot" style="background:${p.couleur || '#888'}">${colorToInitials(p.ecurie)}</div>
+          <div>
+            <div class="inscrit-name">${p.pseudo}</div>
+            <div class="inscrit-ecurie">${p.ecurie}</div>
+          </div>
+        </div>
+        <div class="inscrit-meta">
+          <div class="meta-item">
+            <div class="lbl">VOITURE</div>
+            <div class="val">${p.voiture || '—'}</div>
+          </div>
+          <div class="meta-item">
+            <div class="lbl">LIVRÉE</div>
+            <div class="val" style="display:flex;align-items:center;gap:6px">
+              <span style="width:10px;height:10px;border-radius:50%;background:${p.couleur || '#888'};display:inline-block;flex-shrink:0"></span>
+              ${p.livree ? p.livree.slice(0,40)+(p.livree.length>40?'…':'') : '—'}
+            </div>
+          </div>
+          <div class="meta-item meta-full">
+            <div class="lbl">RÉGLAGE</div>
+            <div class="val">${p.reglage ? p.reglage.slice(0,100)+(p.reglage.length>100?'…':'') : '—'}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function chargerInscrits() {
+    fetch(SCRIPT_URL + '?action=list')
+      .then(r => r.json())
+      .then(data => renderListe(data.inscrits || []))
+      .catch(() => {
+        document.getElementById('liste').innerHTML = '<div class="empty-state">Impossible de charger les inscriptions.<br>Vérifie l\'URL Apps Script.</div>';
+        document.getElementById('count').textContent = '?';
+      });
+  }
+
+  function inscrire() {
+    const pseudo = document.getElementById('pseudo').value.trim();
+    const ecurie = document.getElementById('ecurie').value.trim();
+    const couleur = document.getElementById('livree-color').value;
+    const livree = document.getElementById('livree-desc').value.trim();
+    const voiture = document.getElementById('voiture').value.trim();
+    const reglage = document.getElementById('reglage').value.trim();
+
+    if (!pseudo || !ecurie) { showToast('Pseudo et écurie sont obligatoires !', true); return; }
+
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours...';
+
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ pseudo, ecurie, couleur, livree, voiture, reglage })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'ok') {
+        showToast('Inscription validée ! Bienvenue dans le paddock, ' + pseudo + ' !');
+        ['pseudo','ecurie','livree-desc','livree-color-text','voiture','reglage'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        document.getElementById('livree-color').value = '#E8C040';
+        chargerInscrits();
+      } else {
+        showToast(data.message || 'Erreur lors de l\'inscription.', true);
+      }
+    })
+    .catch(() => showToast('Erreur réseau. Réessaie dans quelques secondes.', true))
+    .finally(() => { btn.disabled = false; btn.textContent = 'Valider mon inscription'; });
+  }
+
+  const colorPicker = document.getElementById('livree-color');
+  const colorText = document.getElementById('livree-color-text');
+  colorPicker.addEventListener('input', () => { colorText.value = colorPicker.value; });
+  colorText.addEventListener('input', () => {
+    if (/^#[0-9A-Fa-f]{6}$/.test(colorText.value)) colorPicker.value = colorText.value;
+  });
+
+  chargerInscrits();
+</script>
+</body>
+</html>
